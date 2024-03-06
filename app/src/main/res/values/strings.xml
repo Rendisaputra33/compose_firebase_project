@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">firebase_project</string>
+    <string name="web_client_id">111025469309-br45roahak5f4f16odr3e55r1j11ergc.apps.googleusercontent.com</string>
+    <string name="title_activity_home">HomeActivity</string>
+</resources>
