@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,12 @@ fun Greeting(name: String, onClick:  () -> Unit, modifier: Modifier = Modifier) 
 
     val context = LocalContext.current
     val token = stringResource(R.string.web_client_id)
+
+    LaunchedEffect(key1 = user) {
+        if (user != null) {
+            context.startActivity(Intent(context, HomeActivity::class.java))
+        }
+    }
 
     val laucher = rememberFirebaseAuthLauncher(
         onAuthComplete = {result ->
