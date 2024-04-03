@@ -1,5 +1,8 @@
 package com.blanks.firebase
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +43,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 
-class HomeActivity : ComponentActivity() {
+class EditScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -49,11 +53,7 @@ class HomeActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val user = Firebase.auth.currentUser
-
-                    Log.i("USER : ", user?.email!!)
-
-                    Greeting2(user.email!!)
+                    Greeting4()
                 }
             }
         }
@@ -61,15 +61,37 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting2(name: String, modifier: Modifier = Modifier) {
+fun Greeting4(modifier: Modifier = Modifier) {
     val store = Firebase.firestore
     val context = LocalContext.current
 
     var nameInput by remember { mutableStateOf("") }
     var adresss by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
+    var documentID by remember {
+        mutableStateOf("")
+    }
     var loadingState by remember {
         mutableStateOf(LoadingState(isLoading = false))
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        val activity = context.findActivity()
+        val intent = activity?.intent
+
+        val id = intent?.getStringExtra("doc_id")
+
+        if (id != null) {
+            documentID = id
+            store.collection("public_users")
+                .document(id)
+                .get()
+                .addOnSuccessListener {
+                    nameInput = it.get("name").toString()
+                    adresss = it.get("address").toString()
+                    phoneNumber = it.get("phoneNumber").toString()
+                }
+        }
     }
 
     Column(
@@ -78,7 +100,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Hello $name",
+            text = "Edit Data",
             modifier = modifier
         )
 
@@ -125,13 +147,15 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     phoneNumber = phoneNumber
                 )
 
-                store.collection("public_users").add(data)
+                store.collection("public_users").document(documentID)
+                    .set(data)
                     .addOnSuccessListener {
                         loadingState = LoadingState(isLoading = false)
                         nameInput = ""
                         adresss = ""
                         phoneNumber = ""
-                        Toast.makeText(context, "Berhasil menambah data!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Berhasil mengubah data!", Toast.LENGTH_LONG).show()
+                        context.startActivity(Intent(context, ShowActivity::class.java))
                     }
                     .addOnCanceledListener {
                         Toast.makeText(context, "Gagal menambah data!", Toast.LENGTH_LONG).show()
@@ -147,30 +171,26 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
             }
 
             Button(onClick = {
-                context.startActivity(Intent(context,ShowActivity::class.java))
+                context.startActivity(Intent(context,HomeActivity::class.java))
             }, modifier = modifier
                 .fillMaxWidth()
                 .padding(3.dp)) {
-                Text(text = "Lihat")
+                Text(text = "Kembali")
             }
-        }
-
-        Button(onClick = {
-            Firebase.auth.signOut()
-            Toast.makeText(context, "Logout berhasil", Toast.LENGTH_LONG).show()
-            context.startActivity(Intent(context,MainActivity::class.java))
-        }, modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 55.dp)) {
-            Text(text = "Logout")
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview2() {
+fun GreetingPreview4() {
     Firebase_projectTheme {
-        Greeting2("Android")
+        Greeting4()
     }
+}
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

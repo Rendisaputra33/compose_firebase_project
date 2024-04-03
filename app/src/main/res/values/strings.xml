@@ -3,4 +3,5 @@
     <string name="web_client_id">111025469309-br45roahak5f4f16odr3e55r1j11ergc.apps.googleusercontent.com</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="title_activity_show">ShowActivity</string>
+    <string name="title_activity_edit_screen">EditScreen</string>
 </resources>
